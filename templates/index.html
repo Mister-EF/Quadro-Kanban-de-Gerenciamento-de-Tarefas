@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Meu Kanban</title>
+    <style>
+        body { font-family: sans-serif; background: #e0e0e0; display: flex; justify-content: center; padding: 50px; }
+        .kanban-board { display: flex; gap: 20px; }
+        .column { background: #ebedf0; border-radius: 5px; width: 250px; min-height: 400px; padding: 10px; }
+        .column h3 { text-align: center; color: #333; }
+        .task-list { min-height: 350px; }
+        .task { background: white; margin: 10px 0; padding: 15px; border-radius: 3px; cursor: grab; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+        .task:active { cursor: grabbing; }
+        .dragging { opacity: 0.5; }
+    </style>
+</head>
+<body>
+    <div class="kanban-board">
+        {% for coluna, itens in tarefas.items() %}
+        <div class="column" ondrop="drop(event)" ondragover="allowDrop(event)">
+            <h3>{{ coluna.upper() }}</h3>
+            <div class="task-list" id="{{ coluna }}">
+                {% for item in itens %}
+                <div class="task" draggable="true" ondragstart="drag(event)" id="{{ item }}">{{ item }}</div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        function allowDrop(ev) { ev.preventDefault(); }
+
+        function drag(ev) {
+            ev.dataTransfer.setData("text", ev.target.id);
+            ev.target.classList.add('dragging');
+        }
+
+        async function drop(ev) {
+            ev.preventDefault();
+            const data = ev.dataTransfer.getData("text");
+            const draggedElement = document.getElementById(data);
+            draggedElement.classList.remove('dragging');
+            
+            let targetList = ev.target.classList.contains('task-list') ? ev.target : ev.target.closest('.task-list');
+            
+            if (targetList) {
+                targetList.appendChild(draggedElement);
+                await salvarEstado();
+            }
+        }
+
+        async function salvarEstado() {
+            const novoEstado = {
+                todo: Array.from(document.getElementById('todo').children).map(t => t.id),
+                doing: Array.from(document.getElementById('doing').children).map(t => t.id),
+                done: Array.from(document.getElementById('done').children).map(t => t.id)
+            };
+
+            await fetch('/atualizar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(novoEstado)
+            });
+        }
+    </script>
+</body>
+</html>
