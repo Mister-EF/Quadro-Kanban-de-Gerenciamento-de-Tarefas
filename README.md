@@ -1,4 +1,4 @@
-# Task Management Kanban Board - Quadro Kanban de Gerenciamento de Tarefas
+# Task Management Kanban Board
 
 A comprehensive full-stack application featuring an HTML/CSS column layout, the JavaScript Drag-and-Drop API for fluid task movement, and a Python-based Flask backend to store and persist task states. Move a card across columns and the entire board state is saved server-side automatically — no manual saving required.
 
